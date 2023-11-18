@@ -27,10 +27,10 @@ export class User {
     bio: string;
     
     @Column({default: 0})
-    followers: number;
+    followers_count: number;
     
     @Column({default:0})
-    following: number;
+    following_count: number;
 
     @Column()
     password_hash:string;
