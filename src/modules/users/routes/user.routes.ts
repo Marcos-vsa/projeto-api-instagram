@@ -1,11 +1,12 @@
 import { Router } from "express";
 import UserController from "../controller/user.controller";
+import { validateUserCreationMiddleware } from "../middlewares/validate-user-creation.middlewares";
 
 export const UserRoutes = (): Router => {
     const router = Router();
 
     //POST/users
-    router.post("/",UserController.createUser);
+    router.post("/", validateUserCreationMiddleware, UserController.createUser);
 
     //GET/users
     router.get("/", UserController.listUsers);
@@ -18,6 +19,6 @@ export const UserRoutes = (): Router => {
 
     //DELETE/users/:user_id
     router.delete("/:user_id",UserController.deleteUser);
-    
+
     return router;
 }

@@ -1,21 +1,22 @@
 import { Request, Response,} from "express";
 import { User } from "../entities/user.entity";
 import { AppDataSource } from "../../../services/database/app-data-source";
-
+import bcrypt from "bcrypt";
 
 
 class UserController {
     async createUser(req:Request,res:Response){
-        const{name , email , password} = req.body;
+        const{name , email , password,bio} = req.body;
 
         try{
             const user = await AppDataSource.getRepository(User).save({
                 name: name,
                 email: email,
-                password: password,
+                password_hash: bcrypt.hashSync(password, 8) ,
+                bio:bio,
             });
-            console.log(`User${user.id}created`)
-            res.status(201).json({ok:true,message:"Usuário criado com sucesso"});
+            console.log(`User ${user.id} created`)
+            res.status(201).json({ok:true, message:"Usuário criado com sucesso"});
         }catch(error){
             console.log(error,"Erro in createdUser")
             return res.status(400).json({message: "Erro ao criar usuário"});
@@ -27,7 +28,7 @@ class UserController {
             const users = await AppDataSource.getRepository(User).find({
                 select:["id","name","bio","followers_count","followers_count"],
             });
-            return res.status(200).json({ok:true,users});
+            return res.status(200).json({ok:true, users});
         }catch(error){
             console.log(error,"Error to listUsers");
             return res.status(400).json({message:"Erro ao listar usuários"});
@@ -40,7 +41,7 @@ class UserController {
             const user = await AppDataSource.getRepository(User).findOne({
                 where:{id: +req.params.user_id},
             });
-            return res.status(200).json({ok:true,user});
+            return res.status(200).json({ok:true, user});
         }catch(error) {
             console.log(error,"Error to findOne")
             res.status(500).send({ok:false, error:"Error-findind-user"})
