@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from "express";
 
-
 export const validateAuthTokenCreationMiddleware = async(
     req: Request,
     res: Response,

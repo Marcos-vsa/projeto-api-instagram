@@ -23,7 +23,7 @@ export class Post{
     image_url: string;
 
     @Column()
-    description: string;
+    label: string;
 
     @CreateDateColumn()
     created_at: Date;

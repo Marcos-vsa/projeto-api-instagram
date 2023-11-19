@@ -1,9 +1,5 @@
 import { NextFunction, Request, Response } from "express";
 
-
-
-
-
 export const validateUserCreationMiddleware = async (
     req:Request ,
     res: Response, 

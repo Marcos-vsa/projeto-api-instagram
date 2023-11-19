@@ -2,6 +2,7 @@ import { Request, Response,} from "express";
 import { User } from "../entities/user.entity";
 import { AppDataSource } from "../../../services/database/app-data-source";
 import bcrypt from "bcrypt";
+import  jwt  from "jsonwebtoken";
 
 
 class UserController {
@@ -87,6 +88,39 @@ class UserController {
         }catch(error) {
             console.log(error,"Error in deleteUser");
             res.status(500).send({ok: false, error:"error-deleting-user"});
+        }
+    }
+
+    async authenticate(req:Request,res:Response){
+        try{
+            //Coletando os dados do req.body
+            const {email,password} = req.body;
+
+            //Buscando usuário pelo email
+            const user = await AppDataSource.getRepository(User).findOne({
+                where:{email:email},
+            });
+
+            //Se não en contrar usuário com este email , retorne erro
+            if(!user){
+                return res.status(404).json({ok:false,error:"user-not-found"});
+            }
+
+            //Compara senha e enviada no req.body com o hash armazenado
+            if(!bcrypt.compareSync(password,user.password_hash)){
+                return res.status(401).json({ok:false, error:"invalid-password"});
+            }
+
+            //Gera token JWT
+            const token = jwt.sign({id: user.id, email: user.email}, 
+                process.env.JWT_SECRET as string,
+            );
+            
+            //Retorna o token para o usuário
+            return res.status(200).json({ok:true, token});
+        }catch(error){
+            console.log(error, "Error in authenticate");
+            res.status(500).send({ok:false , error:"error-authenticating-user"});
         }
     }
 }

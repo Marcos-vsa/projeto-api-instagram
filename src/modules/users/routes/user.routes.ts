@@ -20,5 +20,7 @@ export const UserRoutes = (): Router => {
     //DELETE/users/:user_id
     router.delete("/:user_id",UserController.deleteUser);
 
+    //POST/users/authenticate
+    router.post("/authenticate",UserController.authenticate);
     return router;
 }
