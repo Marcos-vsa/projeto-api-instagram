@@ -3,6 +3,7 @@ import { User } from "../entities/user.entity";
 import { AppDataSource } from "../../../services/database/app-data-source";
 import bcrypt from "bcrypt";
 import  jwt  from "jsonwebtoken";
+import { Post } from "../../posts/entities/post.entity";
 
 
 class UserController {
@@ -91,6 +92,44 @@ class UserController {
         }
     }
 
+    async listPosts(req:Request,res:Response){
+        try{
+            const requestingUser = res.locals.user as User;
+            console.log(requestingUser,"requestingUser");
+    
+            const posts = await AppDataSource.getRepository(Post).findOne({
+                where:{user_id: requestingUser.id}
+            });
+    
+            return res.status(200).json({ok:true, posts: posts});
+        }catch(error){
+            console.log(error,"Error in listPosts");
+            res.status(500).send({ok:false, error:"error-listining-posts"})
+        }
+    }
+
+    async listPostByUser(req:Request,res:Response){
+        try{
+            const user = await AppDataSource.getRepository(User).findOne({
+                where: {id: +req.params.user_id},
+            });
+
+            if(!user){
+                return res.status(404).json({ok: false, error:"user-not-found"});
+            }
+
+            const posts = await AppDataSource.getRepository(Post).find({
+                where: {user_id: user_id},
+            });
+
+            return res.status(200).json({ok:true, posts:posts});
+
+        }catch(error){
+            console.log(error, "Error in listPostsByUser");
+            return res.status(500).send({ok:false, error:"error-listing-posts"});
+        }
+    }
+
     async authenticate(req:Request,res:Response){
         try{
             //Coletando os dados do req.body
@@ -99,6 +138,7 @@ class UserController {
             //Buscando usuário pelo email
             const user = await AppDataSource.getRepository(User).findOne({
                 where:{email:email},
+                select: ["id","name","email","password_hash"],
             });
 
             //Se não en contrar usuário com este email , retorne erro
@@ -114,6 +154,7 @@ class UserController {
             //Gera token JWT
             const token = jwt.sign({id: user.id, email: user.email}, 
                 process.env.JWT_SECRET as string,
+                { expiresIn: "1d"}
             );
             
             //Retorna o token para o usuário
